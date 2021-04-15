@@ -1,0 +1,12 @@
+node_modules
+build
+build-old
+package-lock.json
+.env
+contracts/inprogress
+test/*inprogress*.js
+migrations/*inprogress*.js
+migrations/ignore
+yarn-lock.json
+.openzeppelin
+yarn.lock
