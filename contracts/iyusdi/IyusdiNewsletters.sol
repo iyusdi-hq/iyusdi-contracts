@@ -63,6 +63,15 @@ contract IyusdiNewsletters is Initializable {
   }
 
   function createSubscription(uint256 og, string memory ipfs) payable external returns(uint256 id) {
+    id = _createSubscriptionFor(og, msg.sender, ipfs);
+  }
+
+  function createSubscriptionFor(uint256 og, address to, string memory ipfs) payable external returns(uint256 id) {
+    require(to != address(0), '!for');
+    id = _createSubscriptionFor(og, to, ipfs);
+  }
+
+  function _createSubscriptionFor(uint256 og, address to, string memory ipfs) internal returns(uint256 id) {
     address newsletterOwner = _getNewsletterOwner(og);
     require(newsletterOwner != address(0), '!og');
     uint256 subscriptionFee = subscriptionFees[og];
@@ -77,7 +86,7 @@ contract IyusdiNewsletters is Initializable {
       (bool osuccess, ) = newsletterOwner.call{value: toOwner}("");
       require(osuccess, '!owner');
     }
-    id = IyusdiNft(nft).mintPrint(og, msg.sender, ipfs);
+    id = IyusdiNft(nft).mintPrint(og, to, ipfs);
   }
 
   function post(uint256 og, uint256 hash, string memory ipfs) payable external {

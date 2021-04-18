@@ -13,11 +13,5 @@ module.exports = async function (deployer, network, accounts) {
     const postFee             = '0'                 // 0
     const newsletters = await deployProxy(IyusdiNewsletters, [newsletterFee, subscriptionMinFee, subscriptionPercent, postFee], { deployer });
     console.log(`IyusdiNewsletters: '${newsletters.address}',`);
-
-    const operator = newsletters.address; // '0x0000000000000000000000000000000000000000' for testing 000_TestIyusdiNft.js
-    const uri = 'https://iyusdi.design/api/metadata/{id}';
-    const nft = await deployProxy(IyusdiNft, [operator, addrs.curator, uri], { deployer });
-    console.log(`IyusdiNft: '${nft.address}',`);
-    await newsletters.setNft(nft.address);
   });
 }

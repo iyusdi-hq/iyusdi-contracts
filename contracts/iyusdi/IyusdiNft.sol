@@ -51,9 +51,11 @@ contract IyusdiNft is ERC1155Upgradeable {
   address public curator;
   address public operator;
   Original[] public originals;
+  mapping (uint256 => bool) public canTransfer;
   mapping (uint256 => address) public originalOwner;
 
   function initialize(address _operator, address _curator, string memory _uri) initializer public {
+    require(_curator != address(0), '!curator');
     __ERC1155_init(_uri);
     _mint(_curator, CURATOR_ID, 1, "");
     emit CuratorMinted(_curator, CURATOR_ID);
@@ -127,6 +129,21 @@ contract IyusdiNft is ERC1155Upgradeable {
     emit PrintBurned(from, id);
   }
 
+  function _canTransfer(uint256 id, address _operator) internal view returns(bool) {
+    if (operator == address(0) || operator == _operator) {
+      return true;
+    } else {
+      uint256 og = _getOgId(id);
+      return canTransfer[og];
+    }
+  }
+
+  function setCanTransfer(uint256 id, bool can) external {
+    require(operator == msg.sender, '!operator');
+    uint256 og = _getOgId(id);
+    canTransfer[og] = can;
+  }
+
   /***********************************|
   |        Hooks                      |
   |__________________________________*/
@@ -139,10 +156,10 @@ contract IyusdiNft is ERC1155Upgradeable {
     bytes memory data
   ) internal virtual override {
     super._beforeTokenTransfer(_operator, from, to, ids, amounts, data);
-    require(operator == address(0) || operator == _operator, '!operator');
 
     for (uint256 i = 0; i < ids.length; i++) {
       uint256 id = ids[i];
+      require(_canTransfer(id, _operator), '!transfer');
       if (id == CURATOR_ID) {
         curator = to;
       } else if (_isOgId(id)) {
