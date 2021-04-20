@@ -2,11 +2,10 @@
 
 pragma solidity >=0.8.0;
 
-import "@openzeppelin/contracts-upgradeable/proxy/utils/Initializable.sol";
 import "../utils/Console.sol";
 import "./IyusdiNft.sol";
 
-contract IyusdiNewsletters is Initializable {
+contract IyusdiNewsletters {
 
   address public nft;
   address public owner;
@@ -19,7 +18,7 @@ contract IyusdiNewsletters is Initializable {
   
   uint256 constant SUBSCRIPTION_BASE = 10000;
 
-  function initialize(uint256 _newsletterFee, uint256 _subscriptionMinFee, uint256 _subscriptionPercent, uint256 _postFee) initializer public {
+  constructor (uint256 _newsletterFee, uint256 _subscriptionMinFee, uint256 _subscriptionPercent, uint256 _postFee) {
     owner = msg.sender;
     postFee = _postFee;
     newsletterFee = _newsletterFee;
@@ -98,6 +97,12 @@ contract IyusdiNewsletters is Initializable {
       require(success, '!sendFee');
     }
     IyusdiNft(nft).post(og, hash, ipfs);
+  }
+
+  function allowNewsletterTransfers(uint256 og, bool allow) external {
+    address newsletterOwner = _getNewsletterOwner(og);
+    require(msg.sender == newsletterOwner, '!owner');
+    IyusdiNft(nft).allowTransfers(og, allow);
   }
 
 }

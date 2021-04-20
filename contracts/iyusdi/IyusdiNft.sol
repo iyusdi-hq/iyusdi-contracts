@@ -2,10 +2,10 @@
 
 pragma solidity >=0.8.0;
 
-import "@openzeppelin/contracts-upgradeable/token/ERC1155/ERC1155Upgradeable.sol";
+import "@openzeppelin/contracts/token/ERC1155/ERC1155.sol";
 import "../utils/Console.sol";
 
-contract IyusdiNft is ERC1155Upgradeable {
+contract IyusdiNft is ERC1155 {
 
   event FeedItem(
     uint256 indexed id,
@@ -54,9 +54,8 @@ contract IyusdiNft is ERC1155Upgradeable {
   mapping (uint256 => bool) public canTransfer;
   mapping (uint256 => address) public originalOwner;
 
-  function initialize(address _operator, address _curator, string memory _uri) initializer public {
+  constructor (address _operator, address _curator, string memory _uri) ERC1155(_uri) {
     require(_curator != address(0), '!curator');
-    __ERC1155_init(_uri);
     _mint(_curator, CURATOR_ID, 1, "");
     emit CuratorMinted(_curator, CURATOR_ID);
     curator = _curator;
@@ -73,7 +72,7 @@ contract IyusdiNft is ERC1155Upgradeable {
   }
 
   function post(uint256 id, uint256 hash, string memory ipfs) external {
-    require(operator == address(0) || msg.sender == operator, '!operator');
+    require(_isOperator(), '!operator');
     uint256 og = _getOgId(id);
     address owner = _getOgOwner(og);
     require(owner != address(0), '!owner');
@@ -97,7 +96,7 @@ contract IyusdiNft is ERC1155Upgradeable {
   }
 
   function mintOriginal(address owner, address creator, uint64 maxPrints, string memory ipfs) external returns(uint256 id) {
-    require(owner != address(0) && creator != address(0), '!parm');
+    require(_isOperator() && owner != address(0) && creator != address(0), '!parm');
     originals.push(Original(creator, maxPrints, 0, 0));
     id = originals.length << 128;
     originalOwner[id] = owner;
@@ -107,7 +106,7 @@ contract IyusdiNft is ERC1155Upgradeable {
   }
 
   function mintPrint(uint256 og, address to, string memory ipfs) external returns(uint256 id) {
-    require(_isOgId(og), '!ogId');
+    require(_isOperator() && _isOgId(og), '!ogId');
     uint256 idx = (og >> 128) - 1;
     Original storage original = originals[idx];
     require(original.maxPrints == 0 || (original.totalPrints + 1 < original.maxPrints), '!maxPrints');
@@ -120,7 +119,7 @@ contract IyusdiNft is ERC1155Upgradeable {
   }
 
   function burnPrint(address from, uint256 id) external {
-    require(_isPrintId(id), '!printId');
+    require(_isOperator() && _isPrintId(id), '!printId');
     uint256 og = _getOgId(id);
     uint256 idx = (og >> 128) - 1;
     Original storage original = originals[idx];
@@ -130,7 +129,7 @@ contract IyusdiNft is ERC1155Upgradeable {
   }
 
   function _canTransfer(uint256 id, address _operator) internal view returns(bool) {
-    if (operator == address(0) || operator == _operator) {
+    if (operator == address(0) || operator == _operator || _isOgId(id)) {
       return true;
     } else {
       uint256 og = _getOgId(id);
@@ -138,7 +137,7 @@ contract IyusdiNft is ERC1155Upgradeable {
     }
   }
 
-  function setCanTransfer(uint256 id, bool can) external {
+  function allowTransfers(uint256 id, bool can) external {
     require(operator == msg.sender, '!operator');
     uint256 og = _getOgId(id);
     canTransfer[og] = can;
@@ -172,7 +171,7 @@ contract IyusdiNft is ERC1155Upgradeable {
       * @dev See {IERC165-supportsInterface}.
       */
   function supportsInterface(bytes4 interfaceId) public view virtual override returns (bool) {
-      return ERC1155Upgradeable.supportsInterface(interfaceId);
+    return ERC1155.supportsInterface(interfaceId);
   }
 
 }

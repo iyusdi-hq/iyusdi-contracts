@@ -1,5 +1,3 @@
-const { deployProxy, upgradeProxy } = require('@openzeppelin/truffle-upgrades');
-const IyusdiNft = artifacts.require("IyusdiNft");
 const IyusdiNewsletters = artifacts.require("IyusdiNewsletters");
 
 module.exports = async function (deployer, network, accounts) {
@@ -11,7 +9,7 @@ module.exports = async function (deployer, network, accounts) {
     const subscriptionMinFee =  '25000000000000000' // .025 ether
     const subscriptionPercent = '1000'              // 10%
     const postFee             = '0'                 // 0
-    const newsletters = await deployProxy(IyusdiNewsletters, [newsletterFee, subscriptionMinFee, subscriptionPercent, postFee], { deployer });
+    const newsletters = await deployer.deploy(IyusdiNewsletters, newsletterFee, subscriptionMinFee, subscriptionPercent, postFee);
     console.log(`IyusdiNewsletters: '${newsletters.address}',`);
   });
 }

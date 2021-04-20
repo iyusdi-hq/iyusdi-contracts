@@ -14,6 +14,7 @@ module.exports = function(accounts, network) {
   }
 
   return {
+    isDev,
     curator,
     deployer,
   };
