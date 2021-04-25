@@ -135,7 +135,7 @@ contract("IyusdiNft Test", async accounts => {
       const ipfsHash = 'ipfshash-post'
       const tx = await NEWSLETTERS.post(ogId, 0, ipfsHash, { from: user1})
       const receipt = await tx;
-      console.log('postReceipt', receipt.receipt.rawLogs)
+      // console.log('postReceipt', receipt.receipt.rawLogs)
       assert.isTrue(true, 'should be true')
     }
 
