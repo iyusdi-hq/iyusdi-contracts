@@ -36,7 +36,7 @@ module.exports = {
       provider: () => new HDWalletProvider(process.env.MAINNET_MNEMONIC, "ws://127.0.0.1:8546"),
       network_id: 1,
       timeoutBlocks: 4000,
-      gasPrice: 110000000000, // 110 gwei
+      gasPrice: 36000000000, // 36 gwei
       gas: 3500000, //1116199
     }
   },

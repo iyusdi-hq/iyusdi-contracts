@@ -8,14 +8,17 @@ module.exports = function(accounts, network) {
   switch (network) {
     case 'mainnet':
       curator = process.env.MAINNET_CURATOR;
+      protocol = process.env.MAINNET_PROTOCOL;
       break;
     default:
-      curator = accounts[0];
+      curator = accounts[1];
+      protocol = accounts[0];
   }
 
   return {
     isDev,
     curator,
+    protocol,
     deployer,
   };
 }
