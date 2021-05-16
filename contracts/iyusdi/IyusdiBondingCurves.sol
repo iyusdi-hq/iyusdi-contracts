@@ -140,7 +140,7 @@ contract IyusdiBondingCurves {
     int128 A1 = fromInt(int256(parms[1]));
     uint256 B = parms[2];
     uint256 C = parms[3];
-    uint256 D = parms[4];
+    int256 D = int256(parms[4]);
     uint256 Decimals = parms[5];
     int128 A = div(A0, A1);
 
@@ -150,7 +150,13 @@ contract IyusdiBondingCurves {
       int128 p = pow(A, n);
       price = mulu(p, Decimals) - Decimals;
     }
-    price = price + (C * printNumber) + D; 
+    price = price + (C * printNumber);
+    // underflow if price goes negative
+    if (D < 0) {
+      price -= uint256(-D);
+    } else {
+      price += uint256(D);
+    }
     price = price * 1 ether / Decimals;
   }
 

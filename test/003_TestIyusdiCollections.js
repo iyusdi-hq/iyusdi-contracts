@@ -216,9 +216,70 @@ contract("IyusdiCollectionsV2 Test", async accounts => {
 
       const data = genData(curveN);
 
-      for (i = 0; i < curveN.MaxPrints; i++) {
+      for (i = 0; i < 100 /*curveN.MaxPrints*/; i++) {
         const printNumber = new BN(`${i + 1}`)
         const printPrice = await COLLECTIONS.getPrintPrice(ogId, printNumber);
+        const p = printPrice.toString();
+        const d = data[i].ETH.toString();
+        if (p !== d)
+          // could be small rounding errors so no assert
+          console.log(`prices not equal, ${i}, ${p}, ${d}`)
+      }
+    }
+
+    console.log(`
+      Check print prices with negative D, should underflow
+    `)
+
+    {
+    
+      const curveN = {
+        A0: BigInt(curve.A0),
+        A1: BigInt(curve.A1),
+        B: BigInt(curve.B),
+        C: BigInt(curve.C),
+        D: BigInt(-10),
+        Decimals: BigInt(curve.Decimals),
+        MaxPrints: BigInt(curve.MaxPrints),
+      }
+
+      const dbad = new BN(BigInt(-11).toString()).toTwos(256);
+      console.log('D twos 256 bad', dbad.toString(16));
+      const curveArray = [curveN.A0.toString(), curveN.A1.toString(), curveN.B.toString(), curveN.C.toString(), dbad.toString(), curve.Decimals.toString()]
+      try {
+        const printPrice = await CURVES.getPrintPrice('1', '1', curveArray);
+        assert.isTrue(false, 'should have underflowed')
+      } catch (e) {
+        // console.log('expected underflow', e);
+      }
+      try {
+        const printPrice = await CURVES.getPrintPrice('1', '2', curveArray);
+      } catch (e) {
+        assert.isTrue(false, 'should not have underflowed')
+      }
+      const dgood = new BN(BigInt(curveN.D).toString()).toTwos(256);
+      console.log('D twos 256 good', dgood.toString(16));
+      curveArray[4] = dgood.toString()
+      
+      const genPrintPrice = (curve, printNumber) => {
+        let price = BigInt(0);
+        if (printNumber > curve.B) {
+          const n = printNumber - curve.B;
+          price = (curve.A0 ** n * curve.Decimals) / (curve.A1 ** n) - curve.Decimals;
+        }
+        price = price + (curve.C * printNumber) + curve.D; 
+        return price * 1000000000000000000n / curve.Decimals;
+      }
+
+      const genData = (curve) => {
+        return Array(Number(curve.MaxPrints)).fill(0).map((_, idx) => { return { ETH: genPrintPrice(curve, BigInt(idx + 1)), x: idx + 1}})
+      }
+
+      const data = genData(curveN);
+
+      for (i = 0; i < 100 /*curveN.MaxPrints*/; i++) {
+        const printNumber = new BN(`${i + 1}`)
+        const printPrice = await CURVES.getPrintPrice('1', printNumber, curveArray);
         const p = printPrice.toString();
         const d = data[i].ETH.toString();
         if (p !== d)
