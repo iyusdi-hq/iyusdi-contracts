@@ -13,6 +13,7 @@ module.exports = async function (deployer, network, accounts) {
     const collections = await deployer.deploy(IyusdiCollectionsV2, addrs.protocol, protocolMintPercent, protocolBurnPercent, curatorMintPercent, curatorBurnPercent);
     console.log(`IyusdiCollections: '${collections.address}',`);
     console.log(`Protocol: '${addrs.protocol}',`);
+    // const collections = await IyusdiCollectionsV2.deployed()
     const nft = await IyusdiNftV2.deployed()
     await collections.setNft(nft.address);
   });
