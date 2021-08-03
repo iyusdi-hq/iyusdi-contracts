@@ -31,5 +31,6 @@
     "test": "export NODE_ENV=test && mocha"
   },
   "author": "Iyusdi",
-  "license": "Iyusdi-1.0"
+  "license": "BUSL-1.1
+"
 }
